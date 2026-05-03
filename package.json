@@ -1,0 +1,18 @@
+{
+  "name": "my-yandex-game",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "game.js",
+  "scripts": {
+    "proxy": "sdk-dev-proxy --path .",
+    "watch": "browser-sync start --proxy \"https://localhost:8080\" --files \"*.html, *.css, *.js\" --https --no-open",
+    "dev": "concurrently \"npm run proxy\" \"npm run watch\""
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.4",
+    "concurrently": "^9.2.1"
+  }
+}

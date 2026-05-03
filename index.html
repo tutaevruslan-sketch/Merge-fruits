@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Merge Gravity Fruits</title>
+  <meta charset="utf-8" />
+
+  <meta name="og:title" content="Merge Fruits">
+  <meta name="description" content="Merge flying fruits in zero gravity. Try to get to the royal fruit.">
+  <meta name="og:description" content="Merge flying fruits in zero gravity. Try to get to the royal fruit.">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+  <!-- <link rel="stylesheet" href="normalize.css" /> -->
+  <link rel="stylesheet" href="style.css" />
+  <script src="p2.min.js"></script>
+  <script src="howler.min.js"></script>
+
+  <!-- Yandex Games SDK -->
+  <!-- <script async src="/sdk.js" onload="start_1()"></script> -->
+  <script src="/sdk.js"></script>
+  <!-- <script src="game.js"></script> -->
+</head>
+
+
+
+<body>
+
+
+
+  <div id="canvas_wrapper">
+    <canvas id="canvas_HUD"></canvas>
+    <!-- Рисует иконки звука и верхнюю панель фруктов -->
+    <canvas id="canvas_gameField"></canvas>
+    <!-- Рисует только GameField -->
+    <canvas id="canvas_fruits"></canvas>
+    <!-- Рисует сами летающие фрукты -->
+  </div>
+
+  <div id="gameField"></div>
+
+
+  <!-- <div id="test_container">
+    <div id="test_div_2">
+    </div>
+    <div id="test_div_1">
+    </div>
+  </div> -->
+
+
+
+  <div id="HUD">
+
+    <div id="star_container">
+
+      <div id="star_button_delete_container" class="hover_scale">
+
+        <div id="star_button_delete_X_container">
+          <div id="star_button_delete_X_shadow">&#215;</div>
+          <div id="star_button_delete_X">&#215;</div>
+        </div>
+
+        <div id="star_button_delete_value_container">
+          <div id="star_button_delete_value_shadow"></div>
+          <div id="star_button_delete_value"></div>
+        </div>
+
+        <img id="star_button_delete_icon_star" draggable="false" src="images/star.png" alt="">
+
+      </div>
+
+      <div id="star_counter_container">
+        <img id="star_counter_image" draggable="false" src="images/star.png" alt="">
+        <div id="star_counter_value_container">
+          <div id="star_counter_value_shadow"></div>
+          <div id="star_counter_value"></div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div id="scores_container">
+      <div id="score_best_container">
+        <img src="images/crown.png" alt="" id="scores_img_crown">
+        <div class="score_container" id="score_best_value_container">
+          <div class="score_shadow" id="score_best_shadow"></div>
+          <div class="score" id="score_best"></div>
+        </div>
+      </div>
+      <div class="score_container" id="score_current_container">
+        <div class="score_shadow" id="score_current_shadow"></div>
+        <div class="score" id="score_current"></div>
+      </div>
+    </div>
+
+
+    <div id="HUD_block_1">
+      <img id="share" class="hover_scale" draggable="false" src="images/share.png" alt="">
+      <img id="leaderboard" class="hover_scale" draggable="false" src="images/leaderboard.png" alt="">
+      <img id="settings" class="hover_rotate" draggable="false" src="images/settings.png" alt="">
+    </div>
+  </div>
+
+
+
+  <!-- Сообщение появляющееся перед показом FullScren-рекламы -->
+  <div id="ads_message_container">
+    <div id="ads_message_title"></div>
+    <button id="ads_message_button">
+      <div id="ads_message_button_text"></div>
+      <img id="ads_message_button_img" draggable="false" src="images/star.png" alt="">
+    </button>
+  </div>
+
+
+  <div id="fps_counter"></div>
+
+
+  <!-- Прозрачный слой для блокировки всех действий игрока. -->
+  <div id="blocking_layer"></div>
+
+  <!-- Тёмные фоны для разных целей -->
+  <div id="dark_layer"></div>
+  <div id="dark_layer_2"></div>
+
+
+
+  <img id="cursor" draggable="false" src="images/cursor.png" alt="">
+  <!-- <img id="icons_info_settings" class="icons_info" draggable="false" src="images/icon_info.png" alt="">
+  <img id="icons_info_stars" class="icons_info" draggable="false" src="images/icon_info.png" alt=""> -->
+
+
+
+
+  <div id="window_stars_background" class="window_background">
+    <div id="window_stars" class="window"></div>
+  </div>
+
+
+  <div id="window_settings_background" class="window_background">
+    <div id="window_settings">
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <div id="window_settings_title">
+          <span id="window_settings_title_shadow"></span>
+          <span id="window_settings_title_text"></span>
+        </div>
+      </div>
+      <div id="window_settings_sounds" class="window_settings_block">
+        <img id="window_settings_sounds_img" draggable="false" class="hover_scale" src="images/all.png" alt="">
+        <div id="window_settings_sounds_container">
+          <p id="window_settings_sounds_container_text">Громкость звуков</p>
+          <input id="window_settings_sounds_container_range" value="50" min="0" max="100" type="range">
+        </div>
+      </div>
+      <div id="window_settings_button_X">
+        <div id="window_settings_button_X_circle" class="hover_scale">
+          <div id="window_settings_button_X_symbol">&#215;</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- <div class="test_1">1111</div> -->
+
+
+
+  <!-- GamePush SDK -->
+  <!-- <script async
+  src="https://gamepush.com/sdk/game-score.js?projectId=27145&publicToken=CjcYce0WlClXITulxNBuLw1d6iIscQ7r&callback=onGPInit">
+</script> -->
+
+  <script src="game.js"></script>
+
+</body>
+
+</html>
