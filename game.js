@@ -2368,24 +2368,17 @@ function Start_game() {  // скачивает все сохранения и н
                 // получаем флаги с сервера и внедряем в игру.
                 ysdk.getFlags({
                     defaultFlags: {
-
-                        can_save_to_cloud_delay: 10000,
-
-                        FullScreen_ads_gift_stars_count: 20,
-
-                        FullScreen_ads_delay_mobile: 240000,
-                        FullScreen_ads_delay_desktop: 65000,
-
-                        stars_rewarded_value: 85,
+                        FullScreen_ads_delay_mobile: 33,
+                        FullScreen_ads_delay_desktop: 33,
+                        count_stars_after_FullScreen_ads: 33,
+                        can_save_to_cloud_delay: 33,
+                        stars_button_delete_fruit_price: 33,
+                        red_line_duration_in_seconds: 33,
                     }
                 })
                     .then(flags => {
 
                         //console.log(flags);
-
-                        can_save_to_cloud_delay = parseInt(flags.can_save_to_cloud_delay);
-
-                        count_stars_after_FullScreen_ads = parseInt(flags.FullScreen_ads_gift_stars_count);
 
                         if (is_mobile) {
                             FullScreen_ads_delay = parseInt(flags.FullScreen_ads_delay_mobile);
@@ -2393,98 +2386,70 @@ function Start_game() {  // скачивает все сохранения и н
                             FullScreen_ads_delay = parseInt(flags.FullScreen_ads_delay_desktop);
                         }
 
-                        stars.rewarded_value = parseInt(flags.stars_rewarded_value);
+                        count_stars_after_FullScreen_ads = parseInt(flags.count_stars_after_FullScreen_ads);
+                        can_save_to_cloud_delay = parseInt(flags.can_save_to_cloud_delay);
+                        stars.button_delete_fruit.price = parseInt(flags.stars_button_delete_fruit_price);
+                        red_line.duration_in_seconds = parseInt(flags.red_line_duration_in_seconds);
+
+                        stars.button_delete_fruit.refresh();
                     });
 
 
+                // получаем Player
+                ysdk.getPlayer().then(_player => {
 
-                // инициируем переменную покупок.
-                ysdk.getPayments()
-                    .then(_payments => {
-                        // Покупки доступны.
-                        payments = _payments;
-                        //console.log('Покупки доступны. --- ' + performance.now());
+                    player = _player;
+                    console.log('Player получен --- ' + performance.now());
 
-                        // получаем список товаров, чтобы вытащить из них ценники и в какой валюте они.
-                        payments.getCatalog()
-                            .then(products => {
-                                stars.in_app_1_price = products[0].priceValue;
-                                stars.in_app_2_price = products[1].priceValue;
-                                stars.in_app_3_price = products[2].priceValue;
+                    player.getStats().then(_dataPlayer => {
 
-                                stars.in_app_1_id = products[0].id;
-                                stars.in_app_2_id = products[1].id;
-                                stars.in_app_3_id = products[2].id;
+                        dataPlayer = _dataPlayer;
+                        console.log('Данные игрока успешно скачаны --- ' + performance.now());
 
-                                stars.price_currency_code = products[0].priceCurrencyCode;
+                        // если не получилось скачать настройки игры, значит не надо запускать игру, пусть игрок сам перезапустит страничку, потому что произошёл какой-то сбой, возможно на сервере.
 
+                        //console.log('До проверки try_download_settings()' + performance.now());
 
-                                // получаем Player
-                                ysdk.getPlayer().then(_player => {
+                        init();
 
-                                    player = _player;
-                                    console.log('Player получен --- ' + performance.now());
+                        download_settings();
 
-                                    player.getStats().then(_dataPlayer => {
+                        //console.log('После проверки try_download_settings()' + performance.now());
 
-                                        dataPlayer = _dataPlayer;
-                                        console.log('Данные игрока успешно скачаны --- ' + performance.now());
+                        ysdk.features.GameplayAPI?.start();
+                        console.log('GameReadyAPI активирован --- ' + performance.now());
 
-                                        // если не получилось скачать настройки игры, значит не надо запускать игру, пусть игрок сам перезапустит страничку, потому что произошёл какой-то сбой, возможно на сервере.
+                        // Самый первый запуск анимации.
+                        animation_id = requestAnimationFrame(animation);
 
-                                        //console.log('До проверки try_download_settings()' + performance.now());
+                        //console.log('Перед check_unconsumed_purchases() ' + performance.now());
 
-                                        download_settings();
+                        // Подписка на события 'game_api_pause'. По сути мне нужно чисто для отслеживания когда FullScreen-реклама запустится.
+                        ysdk.on('game_api_pause', () => {
+                            console.log('game_api_pause');
+                        });
 
-                                        //console.log('После проверки try_download_settings()' + performance.now());
+                        // Подписка на события 'game_api_resume'. По сути мне нужно чисто для отслеживания когда FullScreen-реклама закроется.
+                        ysdk.on('game_api_resume', () => {
 
+                            console.log('game_api_resume');
 
-                                        ysdk.features.GameplayAPI?.start();
-                                        console.log('GameReadyAPI активирован --- ' + performance.now());
+                            // делаю это чисто для того чтобы при старте игры когда выходит Preloader-реклама, когда её закрываешь на крестик, то сразу буду запускаться геймплей, чтобы перед показом Preload-рекламы не запускалась игра, а то можно случайно кликнуть по Preload-рекламе.
+                            /* if (!was_shown_pleloader_ads) {
+                                was_shown_pleloader_ads = true;
+                            } */
+                        });
 
-                                        init();
+                        //console.log('Конец ' + performance.now());
 
-                                        // Самый первый запуск анимации.
-                                        animation_id = requestAnimationFrame(animation);
-
-
-
-                                        //console.log('Перед check_unconsumed_purchases() ' + performance.now());
-
-                                        // Подписка на события 'game_api_pause'. По сути мне нужно чисто для отслеживания когда FullScreen-реклама запустится.
-                                        ysdk.on('game_api_pause', () => {
-                                            console.log('game_api_pause');
-                                        });
-
-                                        // Подписка на события 'game_api_resume'. По сути мне нужно чисто для отслеживания когда FullScreen-реклама закроется.
-                                        ysdk.on('game_api_resume', () => {
-
-                                            console.log('game_api_resume');
-
-                                            // делаю это чисто для того чтобы при старте игры когда выходит Preloader-реклама, когда её закрываешь на крестик, то сразу буду запускаться геймплей, чтобы перед показом Preload-рекламы не запускалась игра, а то можно случайно кликнуть по Preload-рекламе.
-                                            /* if (!was_shown_pleloader_ads) {
-                                                was_shown_pleloader_ads = true;
-                                            } */
-                                        });
-
-                                        //console.log('Конец ' + performance.now());
-
-
-                                    }).catch(err => {
-                                        console.log('Не удалось скачать данные игрока с облака Яндекса. ' + err + ' --- ' + performance.now());
-                                    });
-
-                                }).catch(err => {
-                                    console.log('Ошибка при получении Player. --- ' + err + ' --- ' + performance.now());
-                                });
-                            });
 
                     }).catch(err => {
-                        // Покупки недоступны. Включите монетизацию в консоли разработчика.
-                        // Убедитесь, что на вкладке Покупки консоли разработчика присутствует таблица
-                        // хотя бы с одним внутриигровым товаром и надписью «Покупки разрешены».
-                        console.log('Покупки недоступны. ' + err);
+                        console.log('Не удалось скачать данные игрока с облака Яндекса. ' + err + ' --- ' + performance.now());
                     });
+
+                }).catch(err => {
+                    console.log('Ошибка при получении Player. --- ' + err + ' --- ' + performance.now());
+                });
 
             }).catch(console.error);
     }
@@ -2506,7 +2471,7 @@ function download_settings() { // сначала проверяет на цел�
 // выкачивает настройки игры из локального хранилища браузера, если данные все целые и удалось вставить в игру, то возвращает true, если не удалось, то false.
 function try_download_settings_from_localStorage() {
 
-    /* return false; */
+    return false;
 
 
     if (localStorage.getItem('tri23_fruits_coords') === null) return false;
@@ -2626,10 +2591,8 @@ function download_settings_from_cloud() {
 
     if (is_testing) return;
 
+
     if (platform === platforms.GAME_PUSH) {
-
-        // проверяем данные на целостность, если чего-то не хватает, значит возвращаем false и не запускаем игру, пусть игрок обновит страничку с игрой, либо позже зайдёт, потому что сейчас данные не скачались нормально. Если всё в порядке, то возвращаем true.
-
 
         let temp = gp.player.get('score');
         if (temp !== undefined &&
@@ -2659,10 +2622,6 @@ function download_settings_from_cloud() {
         if (temp !== undefined && typeof temp === 'number')
             sounds.volume = temp;
 
-        scores.refresh();
-        stars.refresh();
-        sounds.refresh();
-
         console.log('Загрузила и вставила данные из облака --- ', performance.now());
     }
 
@@ -2670,11 +2629,17 @@ function download_settings_from_cloud() {
 
     if (platform === platforms.YANDEX_GAMES) {
 
-        //if (Object.keys(dataPlayer).length > 0 && dataPlayer.version === version)
-
         // проверяем скачанные из облака настройки игры на целостность, если переменная существует, то добавляем её в игру.
 
-        if (dataPlayer.fruit_0 !== undefined && typeof dataPlayer.fruit_0 === 'number') fruits_start[0] = dataPlayer.fruit_0;
+        if (dataPlayer.score !== undefined && typeof dataPlayer.score === 'number') scores.value_best = dataPlayer.score;
+
+
+
+
+
+
+
+        /* if (dataPlayer.fruit_0 !== undefined && typeof dataPlayer.fruit_0 === 'number') fruits_start[0] = dataPlayer.fruit_0;
         if (dataPlayer.fruit_1 !== undefined && typeof dataPlayer.fruit_1 === 'number') fruits_start[1] = dataPlayer.fruit_1;
         if (dataPlayer.fruit_2 !== undefined && typeof dataPlayer.fruit_2 === 'number') fruits_start[2] = dataPlayer.fruit_2;
         if (dataPlayer.fruit_3 !== undefined && typeof dataPlayer.fruit_3 === 'number') fruits_start[3] = dataPlayer.fruit_3;
@@ -2730,7 +2695,7 @@ function download_settings_from_cloud() {
             }
         } else {
             set_settings_fruits();
-        }
+        } */
     }
 
     scores.refresh();
@@ -2826,68 +2791,20 @@ function save_settings_to_cloud() {
         // команда setStats отправляет только числовые значения, а раз нельзя передать текст и булевые значения, вместо true передавать буду 1, а вместо false 0.
         player.setStats({
 
-            version: version, // хранит версию. Если версия отличается, то сбросить все сохранения сохранив пустой объект.
-
-            fruit_0: fruits[0].items.length,
-            fruit_1: fruits[1].items.length,
-            fruit_2: fruits[2].items.length,
-            fruit_3: fruits[3].items.length,
-            fruit_4: fruits[4].items.length,
-            fruit_5: fruits[5].items.length,
-            fruit_6: fruits[6].items.length,
-            fruit_7: fruits[7].items.length,
-            fruit_8: fruits[8].items.length,
-            fruit_9: fruits[9].items.length,
-            fruit_10: fruits[10].items.length,
-            fruit_11: fruits[11].items.length,
-            fruit_12: fruits[12].items.length,
-            fruit_13: fruits[13].items.length,
-            fruit_14: fruits[14].items.length,
-
-            score: scores.value_current,
+            score: scores.value_best,
+            score_current: scores.value_current,
             stars_value: stars.value,
-
             sounds_is_mute: sounds.is_mute ? 1 : 0,
             sounds_volume: sounds.volume,
 
-            icons_info_was_opened_window_settings: icons_info.was_opened_window_settings ? 1 : 0,
-            icons_info_was_opened_window_stars: icons_info.was_opened_window_stars ? 1 : 0,
-
         }).then(() => {
             console.log('Данные загружены в облако.');
-
-            if (stars.purchases.length > 0) {
-                payments.consumePurchase(stars.current_in_app_purchaseToken)
-                    .then(purchase => {
-                        // Покупка успешно консумирована.
-                        console.log('Покупка успешно консумирована.', performance.now());
-
-                        show_popup_of_purchased_stars(stars.current_in_app_value_of_stars);
-
-                    }).catch(err => {
-                        // Ошибка! Покупка НЕ консумирована.
-                        console.log('Ошибка! Покупка НЕ консумирована. --- ' + err + ' --- ' + performance.now());
-
-                        stars.value -= stars.current_in_app_value_of_stars;
-                        stars.purchases = [];
-
-                        // принудительно сохраняем в облако.
-                        can_save_to_cloud = true;
-                        save_settings();
-                    });
-            }
-
         }).catch(err => {
             console.log('Ошибка при сохранении в облако. --- ' + err + ' --- ' + performance.now());
-
-            if (stars.purchases.length > 0) {
-                stars.value -= stars.current_in_app_value_of_stars;
-                stars.purchases = [];
-            }
         });
 
         // загружаем новый результат в leaderboard в облако.
-        ysdk.leaderboards.setScore('myLeaderboard2', scores.value_current);
+        ysdk.leaderboards.setScore('myLeaderboard', scores.value_best);
     }
 
     can_save_to_cloud = false;
@@ -5234,7 +5151,7 @@ function show_popup_of_purchased_stars(stars_count) {
     let offset_Y = top + height / 2 - center_Y;
 
 
-    console.log('window_stars_offset_X = ', offset_X, '   window_stars_offset_Y = ', offset_Y);
+    //console.log('window_stars_offset_X = ', offset_X, '   window_stars_offset_Y = ', offset_Y);
 
 
     setTimeout(() => {
