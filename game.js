@@ -5,7 +5,7 @@ const ctx_HUD = canvas_HUD.getContext("2d");
 const canvas_fruits = document.getElementById("canvas_fruits");
 const ctx_fruits = canvas_fruits.getContext("2d");
 
-let is_testing = false;
+let is_testing = true;
 let is_paused = false; // стоит ли сейчас игра на паузе.
 
 let gp; // переменная хранящая GamePush SDK.
@@ -486,7 +486,7 @@ let red_line = {
     is_started_timer: false, // запущен ли сейчас таймер.
 
     time: 0,
-    duration_in_seconds: 45, // 45
+    duration_in_seconds: 35, // 45
     counter_seconds: 0, // счётчик секунд, сколько осталось до GAME OVER.
 
     get_text: function (value) {
@@ -928,6 +928,9 @@ let stars = {
 
         init: function () {
             document.getElementById('star_button_delete_container').addEventListener('click', (event) => {
+
+                sound_click.play();
+
                 this.is_pressed = true;
                 document.getElementById('HUD').style.visibility = 'hidden';
 
@@ -967,6 +970,7 @@ let stars = {
 
 
                 button.addEventListener('click', (event) => {
+                    sound_click.play();
                     document.getElementById('HUD').style.visibility = 'visible';
                     container.remove();
                     stars.button_delete_fruit.is_pressed = false;
@@ -2390,7 +2394,6 @@ function Start_game() {  // скачивает все сохранения и н
                         can_save_to_cloud_delay = parseInt(flags.can_save_to_cloud_delay);
                         stars.button_delete_fruit.price = parseInt(flags.stars_button_delete_fruit_price);
                         red_line.duration_in_seconds = parseInt(flags.red_line_duration_in_seconds);
-
                         stars.button_delete_fruit.refresh();
                     });
 
@@ -2471,7 +2474,7 @@ function download_settings() { // сначала проверяет на цел�
 // выкачивает настройки игры из локального хранилища браузера, если данные все целые и удалось вставить в игру, то возвращает true, если не удалось, то false.
 function try_download_settings_from_localStorage() {
 
-    return false;
+    //return false;
 
 
     if (localStorage.getItem('tri23_fruits_coords') === null) return false;
@@ -2606,9 +2609,9 @@ function download_settings_from_cloud() {
         if (temp !== undefined && typeof temp === 'number')
             scores.value_best = temp;
 
-        temp = gp.player.get('score_current');
+        /* temp = gp.player.get('score_current');
         if (temp !== undefined && typeof temp === 'number')
-            scores.value_current = temp;
+            scores.value_current = temp; */
 
         temp = gp.player.get('stars_value');
         if (temp !== undefined && typeof temp === 'number')
@@ -2626,76 +2629,22 @@ function download_settings_from_cloud() {
     }
 
 
-
     if (platform === platforms.YANDEX_GAMES) {
 
         // проверяем скачанные из облака настройки игры на целостность, если переменная существует, то добавляем её в игру.
 
         if (dataPlayer.score !== undefined && typeof dataPlayer.score === 'number') scores.value_best = dataPlayer.score;
 
+        /* if (dataPlayer.score_current !== undefined && typeof dataPlayer.score_current === 'number') scores.value_current = dataPlayer.score_current; */
 
+        if (dataPlayer.stars_value !== undefined && typeof dataPlayer.stars_value === 'number') stars.value = dataPlayer.stars_value;
 
-
-
-
-
-        /* if (dataPlayer.fruit_0 !== undefined && typeof dataPlayer.fruit_0 === 'number') fruits_start[0] = dataPlayer.fruit_0;
-        if (dataPlayer.fruit_1 !== undefined && typeof dataPlayer.fruit_1 === 'number') fruits_start[1] = dataPlayer.fruit_1;
-        if (dataPlayer.fruit_2 !== undefined && typeof dataPlayer.fruit_2 === 'number') fruits_start[2] = dataPlayer.fruit_2;
-        if (dataPlayer.fruit_3 !== undefined && typeof dataPlayer.fruit_3 === 'number') fruits_start[3] = dataPlayer.fruit_3;
-        if (dataPlayer.fruit_4 !== undefined && typeof dataPlayer.fruit_4 === 'number') fruits_start[4] = dataPlayer.fruit_4;
-        if (dataPlayer.fruit_5 !== undefined && typeof dataPlayer.fruit_5 === 'number') fruits_start[5] = dataPlayer.fruit_5;
-        if (dataPlayer.fruit_6 !== undefined && typeof dataPlayer.fruit_6 === 'number') fruits_start[6] = dataPlayer.fruit_6;
-        if (dataPlayer.fruit_7 !== undefined && typeof dataPlayer.fruit_7 === 'number') fruits_start[7] = dataPlayer.fruit_7;
-        if (dataPlayer.fruit_8 !== undefined && typeof dataPlayer.fruit_8 === 'number') fruits_start[8] = dataPlayer.fruit_8;
-        if (dataPlayer.fruit_9 !== undefined && typeof dataPlayer.fruit_9 === 'number') fruits_start[9] = dataPlayer.fruit_9;
-        if (dataPlayer.fruit_10 !== undefined &&
-            typeof dataPlayer.fruit_10 === 'number') fruits_start[10] = dataPlayer.fruit_10;
-        if (dataPlayer.fruit_11 !== undefined &&
-            typeof dataPlayer.fruit_11 === 'number') fruits_start[11] = dataPlayer.fruit_11;
-        if (dataPlayer.fruit_12 !== undefined &&
-            typeof dataPlayer.fruit_12 === 'number') fruits_start[12] = dataPlayer.fruit_12;
-        if (dataPlayer.fruit_13 !== undefined &&
-            typeof dataPlayer.fruit_13 === 'number') fruits_start[13] = dataPlayer.fruit_13;
-        if (dataPlayer.fruit_14 !== undefined &&
-            typeof dataPlayer.fruit_14 === 'number') fruits_start[14] = dataPlayer.fruit_14;
-
-        if (dataPlayer.score !== undefined && typeof dataPlayer.score === 'number') scores.value_current = dataPlayer.score;
-        if (dataPlayer.stars_value !== undefined &&
-            typeof dataPlayer.stars_value === 'number') stars.value = dataPlayer.stars_value;
-
-        if (dataPlayer.sounds_is_mute !== undefined &&
-            typeof dataPlayer.sounds_is_mute === 'number') {
-            sounds.is_mute = dataPlayer.sounds_is_mute === 1 ? true : false;
+        if (dataPlayer.sounds_is_mute !== undefined && typeof dataPlayer.sounds_is_mute === 'number') {
+            if (dataPlayer.sounds_is_mute === 1) sounds.is_mute = true;
+            else sounds.is_mute = false;
         }
 
-        if (dataPlayer.sounds_volume !== undefined &&
-            typeof dataPlayer.sounds_volume === 'number') {
-            sounds.volume = dataPlayer.sounds_volume;
-        }
-
-        if (dataPlayer.icons_info_was_opened_window_settings !== undefined &&
-            typeof dataPlayer.icons_info_was_opened_window_settings === 'number') {
-            icons_info.was_opened_window_settings = dataPlayer.icons_info_was_opened_window_settings === 1 ? true : false;
-        }
-        if (dataPlayer.icons_info_was_opened_window_stars !== undefined &&
-            typeof dataPlayer.icons_info_was_opened_window_stars === 'number') {
-            icons_info.was_opened_window_stars = dataPlayer.icons_info_was_opened_window_stars === 1 ? true : false;
-        }
-
-
-        // если версия игры не совпадает, то включить игроку обучение и обнулить фрукты на поле и на boardFruits.
-        if (dataPlayer.version !== undefined && dataPlayer.version === version) {
-
-            if (dataPlayer.board_fruits_max_open_fruit !== undefined &&
-                typeof dataPlayer.board_fruits_max_open_fruit === 'number') {
-            }
-            if (dataPlayer.board_fruits_how_many_copies_left !== undefined &&
-                typeof dataPlayer.board_fruits_how_many_copies_left === 'number') {
-            }
-        } else {
-            set_settings_fruits();
-        } */
+        if (dataPlayer.sounds_volume !== undefined && typeof dataPlayer.sounds_volume === 'number') sounds.volume = dataPlayer.sounds_volume;
     }
 
     scores.refresh();
@@ -2777,7 +2726,7 @@ function save_settings_to_cloud() {
     if (platform === platforms.GAME_PUSH) {
 
         gp.player.set('score', Math.floor(scores.value_best));
-        gp.player.set('score_current', Math.floor(scores.value_current));
+        //gp.player.set('score_current', Math.floor(scores.value_current));
         gp.player.set('stars_value', Math.floor(stars.value));
         gp.player.set('sounds_is_mute', sounds.is_mute);
         gp.player.set('sounds_volume', sounds.volume);
@@ -2791,9 +2740,9 @@ function save_settings_to_cloud() {
         // команда setStats отправляет только числовые значения, а раз нельзя передать текст и булевые значения, вместо true передавать буду 1, а вместо false 0.
         player.setStats({
 
-            score: scores.value_best,
-            score_current: scores.value_current,
-            stars_value: stars.value,
+            score: Math.floor(scores.value_best),
+            //score_current: Math.floor(scores.value_current),
+            stars_value: Math.floor(stars.value),
             sounds_is_mute: sounds.is_mute ? 1 : 0,
             sounds_volume: sounds.volume,
 
@@ -3405,6 +3354,15 @@ function window_resize() { // что происходит когда игрок 
     draw_HUD();
 
     refresh_window_settings();
+
+    if (!is_testing) {
+        if (platform === platforms.YANDEX_GAMES) {
+            // отключаем показ кнопки leaderboard.
+            document.getElementById('leaderboard').style.display = 'none';
+            // отключаем показ кнопки share.
+            document.getElementById('share').style.display = 'none';
+        }
+    }
 }
 
 
@@ -3889,14 +3847,7 @@ function init() {
 
     pointer.init();
 
-    if (!is_testing) {
-        if (platform === platforms.YANDEX_GAMES) {
-            // отключаем показ кнопки leaderboard.
-            document.getElementById('leaderboard').style.display = 'none';
-            // отключаем показ кнопки share.
-            document.getElementById('share').style.display = 'none';
-        }
-    }
+
 
     // нужно для правильного высчитывания scale_of_fps нужного для высчитывания шагов в фитилях.
     /* setTimeout(() => {
@@ -4580,26 +4531,9 @@ window.addEventListener("keydown", (event) => {
         } else if (k === 53) { // 5
 
 
-            let a = document.createElement('div');
-            document.body.append(a);
-            a.style.backgroundColor = 'yellow';
-            a.style.position = 'absolute';
 
-            let width = document.getElementById('star_counter_value').getBoundingClientRect().width;
-            let height = document.getElementById('star_counter_value').getBoundingClientRect().height;
-            let left = document.getElementById('star_counter_value').getBoundingClientRect().left;
-            let top = document.getElementById('star_counter_value').getBoundingClientRect().top;
 
-            //alert(top);
 
-            a.style.width = width + 'px';
-            a.style.height = height + 'px';
-
-            let center = canvas_HUD.width / 2 / window.devicePixelRatio;
-
-            a.style.left = center + 'px';
-            a.style.top = '10px';
-            a.style.border = '3px solid red';
 
             //a.style.transform = 'translate(-50%, -50%)';
 
@@ -4611,6 +4545,9 @@ window.addEventListener("keydown", (event) => {
 
 
         } else if (k === 54) { // 6
+
+
+
 
 
             //gp.payments.consume({ tag: 'STARS_9000' });
@@ -5455,7 +5392,19 @@ function fast_scale_of_counter(counter) {
 
 
 
+
 function test() {
+
+
+    /* let a = {
+        test1: 1,
+        test2: 2,
+    };
+    let b = e?.test2;
+    console.log(b); */
+
+
+
 
 
     /* let a = document.createElement('div');
@@ -5575,11 +5524,25 @@ function first_start_game() {
 
 // Функция-проверка
 function checkSDKAndStart() {
-    if (typeof YaGames !== 'undefined') {
+
+    let delay = 10;
+
+    if (is_testing) {
         Start_game();
-    } else {
-        // Если SDK еще не готов, проверяем снова через 10мс.
-        setTimeout(checkSDKAndStart, 10);
+        return;
+    }
+
+    if (platform === platforms.YANDEX_GAMES) {
+        if (typeof YaGames !== 'undefined') {
+            Start_game();
+        } else {
+            // Если SDK еще не готов, проверяем снова через 10мс.
+            setTimeout(checkSDKAndStart, delay);
+        }
+    }
+
+    if (platform === platforms.GAME_PUSH) {
+
     }
 }
 

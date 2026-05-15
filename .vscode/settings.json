@@ -27,5 +27,8 @@
         "ysdk"
     ],
     "workbench.colorCustomizations": {},
-    "editor.tabFocusMode": false
+    "editor.tabFocusMode": false,
+    "css.styleSheets": [
+        "style.css"
+    ]
 }
