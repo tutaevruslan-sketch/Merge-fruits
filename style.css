@@ -807,8 +807,8 @@ canvas {
   border-style: dotted;
   border-width: 0.1em;
   border-color: white;
-  padding: 0.4em 0.1em;
-  font-size: 1em;
+  padding: 0.2em 0.1em;
+  font-size: 0.8em;
 }
 
 
@@ -816,7 +816,7 @@ canvas {
 
 
 #star_button_delete_X_container {
-  font-size: 4em;
+  font-size: 3em;
   text-align: center;
   position: relative;
   line-height: 0.1;
@@ -889,7 +889,7 @@ canvas {
   /* top: -1200px; */
   background-color: #3333333b;
   border-radius: 0.6em;
-  font-size: 1.2em;
+  font-size: 1.5em;
   padding-bottom: 0.1em;
 }
 
@@ -905,6 +905,7 @@ canvas {
 
 #star_counter_value_container {
   position: relative;
+  padding-right: 0.2em;
 }
 
 #star_counter_value_shadow {

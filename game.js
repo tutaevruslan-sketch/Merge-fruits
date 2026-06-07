@@ -15,7 +15,7 @@ let ysdk; // переменная хранящая Yandex SDK.
 
 
 
-let languages = {
+const languages = {
     RU: 'ru',
     EN: 'en',
 }
@@ -147,10 +147,6 @@ let gameField = {
             gameField_elem.style.clipPath = `rect(${top}px ${right}px ${bottom}px ${left}px)`;
         },
     },
-
-
-
-
 };
 
 let scale = 1; // сколько пикселей в 1 метре в физическом движке.
@@ -161,17 +157,10 @@ let scale_Y = 1; // общий scale зависящий от ширины gameFi
 let circleRadius = 1;
 
 let image_fruits = new Image();
-//image_fruits.src = 'images/fruits.png';
 image_fruits.src = 'images/fruits.png';
 
 let image_all = new Image();
 image_all.src = 'images/all.png';
-
-let image_gift = new Image();
-image_gift.src = 'images/gift.png';
-
-let image_magnet = new Image();
-image_magnet.src = 'images/magnet.png';
 
 let image_star = new Image();
 image_star.src = 'images/star.png';
@@ -248,24 +237,9 @@ let sound_push_fruit = new Howl({
     volume: 0.1, // 0.075
 });
 
-let sound_merge = new Howl({
-    src: ['sounds/merge.mp3'],
-    volume: 1, // 0.55
-});
-
 let sound_add_score = new Howl({
     src: ['sounds/add_score.mp3'],
     volume: 0.2, // 0.6
-});
-
-let sound_open_new_fruit = new Howl({
-    src: ['sounds/open_new_fruit.mp3'],
-    volume: 0.3, // 0.2
-});
-
-let sound_on_off_game_mode = new Howl({
-    src: ['sounds/on_off_game_mode.mp3'],
-    volume: 0.6, // 0.3
 });
 
 let sound_click = new Howl({
@@ -278,10 +252,6 @@ let sound_bonus = new Howl({
     volume: 0.23, // 0.15
 });
 
-let sound_purchase = new Howl({
-    src: ['sounds/purchase.mp3'],
-    volume: 0.3, // 0.15
-});
 
 
 
@@ -296,6 +266,32 @@ let window_settings_offset_X; // смещение по оси X для свор�
 let window_settings_offset_Y; // смещение по оси Y для сворачивания окошка настроек.
 let is_opened_window_settings = false; // открыто ли в данный момент окно настроек игры.
 
+
+
+
+// Обертка для удобной работы с Яндекс Метрикой.
+let GameMetrica = {
+    counterId: 124523452, // ЗАМЕНИТЕ на ваш ID счетчика
+
+    goals: {
+        html_load: 'html_load', // Загрузился сам файл index.html  Ставится в самом верху тега <body>. Если эта метка есть, а следующих нет — игра ломается при загрузке JS-скриптов или ассетов (картинок).
+        goal_1: 1,
+        goal_2: 2,
+    },
+
+    // Основной метод отправки события
+    send: function (goalName, params = null) {
+        if (typeof ym !== 'undefined') {
+            if (params) {
+                ym(this.counterId, 'reachGoal', goalName, params);
+            } else {
+                ym(this.counterId, 'reachGoal', goalName);
+            }
+            // Раскомментируйте для отладки в консоли:
+            // console.log(`[Metrica] Event: ${goalName}`, params);
+        }
+    },
+};
 
 
 
@@ -2118,10 +2114,6 @@ function get_coords_of_end_of_distance(x, y, angle, length) {
 
 
 
-function start_1() {
-    console.log(333);
-    /* console.log(111, performance.now()); */
-}
 
 
 function Start_game() {  // скачивает все сохранения и настройки игры из облака.
@@ -2476,6 +2468,8 @@ function try_download_settings_from_localStorage() {
 
     //return false;
 
+    /* console.log('try_download_settings_from_localStorage', performance.now()); */
+
 
     if (localStorage.getItem('tri23_fruits_coords') === null) return false;
 
@@ -2582,7 +2576,7 @@ function try_download_settings_from_localStorage() {
     stars.refresh();
     sounds.refresh();
 
-    console.log('Данные из localStorage успешно вставлены в игру --- ' + performance.now());
+    /* console.log('Данные из localStorage успешно вставлены в игру --- ' + performance.now()); */
 
     return true;
 }
@@ -2685,6 +2679,8 @@ function save_settings_to_localStorage() {
             // переводим координаты фруктов в относительные gameField, от 0 до 1.
             let offset_left = (canvas_gameField.width - gameField.width) / 2;
             x -= offset_left;
+            /* let offset_bottom = (canvas_gameField.height - gameField.height);
+            y -= offset_bottom; */
             x /= gameField.width;
             y /= gameField.height;
 
@@ -3590,9 +3586,9 @@ function set_events() {
 
     // при изменении размера окна игры.
     window.addEventListener("resize", () => {
-        //console.log('resize --- ', performance.now());
+        /* console.log('resize --- ', performance.now()); */
         pause_game(false);
-        save_settings_to_localStorage();
+        /* save_settings_to_localStorage(); */
         window_resize();
         //refresh_settings_of_fruits();
         //update_sizes_all_objects();
@@ -3608,8 +3604,8 @@ function set_events() {
 
     // когда игра возвращается в фокус.
     window.addEventListener("focus", () => {
-        //console.log('focus --- ', performance.now());
-        //refresh_settings_of_fruits();
+        /* console.log('focus --- ', performance.now()); */
+        /* refresh_settings_of_fruits(); */
 
         download_settings();
 
@@ -4124,8 +4120,10 @@ function get_physicCoords_from_canvasCoords(x, y) {
     x -= rect.left;
     y -= rect.top;
 
-    x = (x - canvas_gameField.width / 2) / scale_X;
-    y = (y - canvas_gameField.height / 2) / scale_Y;
+    /* x = (x - canvas_gameField.width / 2) / scale_X;
+    y = (y - canvas_gameField.height / 2) / scale_Y; */
+    x = (x - gameField.centerX) / scale_X;
+    y = (y - gameField.centerY) / scale_Y;
 
     return [x, y];
 }
@@ -4133,8 +4131,8 @@ function get_physicCoords_from_canvasCoords(x, y) {
 
 // Получает Canvas-координаты из Physic-координат.
 function get_canvasCoords_from_physicCoords(x, y) {
-    x = x * scale_X + canvas_gameField.width / 2;
-    y = y * scale_Y + canvas_gameField.height / 2;
+    x = x * scale_X + gameField.centerX;
+    y = y * scale_Y + gameField.centerY;
 
     return [x, y];
 }
@@ -4280,7 +4278,8 @@ function update() {
 
     // Transform the canvas
     ctx_fruits.save();
-    ctx_fruits.translate(canvas_fruits.width / 2, canvas_fruits.height / 2); // Translate to the center
+    /* ctx_fruits.translate(canvas_fruits.width / 2, canvas_fruits.height / 2); // Translate to the center */
+    ctx_fruits.translate(gameField.centerX, gameField.centerY); // Translate to the center
     ctx_fruits.scale(scale_X, scale_Y);
 
 
@@ -4505,17 +4504,7 @@ window.addEventListener("keydown", (event) => {
 
 
 
-            // удаляем все фрукты с поля.
-            if (fruits.length > 0) {
-                for (let i = 0; i < fruits_count; i++) {
-                    for (let j = fruits[i].items.length - 1; j >= 0; j--) {
-                        delete_body_fruit(fruits[i].items[j].body);
-                    }
-                }
-            }
-
-            fruits = [];
-            set_settings_fruits();
+            window.test_23 = 55;
 
 
 
@@ -4531,8 +4520,10 @@ window.addEventListener("keydown", (event) => {
         } else if (k === 53) { // 5
 
 
+            window.test_23 = 77;
 
 
+            console.log(test_23);
 
 
             //a.style.transform = 'translate(-50%, -50%)';
@@ -5395,13 +5386,21 @@ function fast_scale_of_counter(counter) {
 
 function test() {
 
+    let a = GameMetrica.goals.goal_2;
+
+    console.log(a);
+
+
+    /* let a = null; */
+
 
     /* let a = {
         test1: 1,
         test2: 2,
     };
     let b = e?.test2;
-    console.log(b); */
+    let c = 4;
+    console.log(`${c}`); */
 
 
 
